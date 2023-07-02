@@ -1,0 +1,133 @@
+import os
+import nltk
+from pdfminer.high_level import extract_text
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+
+RESERVED_WORDS = [
+    'school',
+    'college',
+    'univers',
+    'academy',
+    'faculty',
+    'institute',
+    'institut',
+    'ecole',
+    'school',
+    'classe'
+    'faculdades',
+    'Schola',
+    'schule',
+    'lise',
+    'lyceum',
+    'lycee',
+    'polytechnic',
+    'kolej',
+    'ünivers',
+    'okul',
+]
+
+SKILLS_DB = [
+    'machine learning',
+    'data science',
+    'python',
+    'word',
+    'excel',
+    'English',
+    'microsoft office'
+]
+
+############## NAME ###################
+def extract_name_from_text(text):
+    person_names = []
+    for sent in nltk.sent_tokenize(text):
+        for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+            if hasattr(chunk, 'label') and chunk.label() == 'PERSON':
+                person_names.append(
+                    ' '.join(chunk_leave[0] for chunk_leave in chunk.leaves())
+                )
+ 
+    return person_names
+
+################ EDUCATION #####################
+def extract_education(text):
+    organizations = []
+ 
+    # first get all the organization names using nltk
+    for sent in nltk.sent_tokenize(text):
+        for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+            if hasattr(chunk, 'label') and chunk.label() == 'ORGANIZATION':
+                organizations.append(' '.join(c[0] for c in chunk.leaves()))
+ 
+    # we search for each bigram and trigram for reserved words
+    # (college, university etc...)
+    education = set()
+    for org in organizations:
+        for word in RESERVED_WORDS:
+            if org.lower().find(word) >= 0:
+                education.add(org)
+ 
+    return education
+
+#################### SKILLS ######################
+
+def extract_skills(text):
+    stop_words = set(nltk.corpus.stopwords.words('english'))
+    word_tokens = nltk.tokenize.word_tokenize(text)
+ 
+    # remove the stop words
+    filtered_tokens = [w for w in word_tokens if w not in stop_words]
+ 
+    # remove the punctuation
+    filtered_tokens = [w for w in word_tokens if w.isalpha()]
+ 
+    # generate bigrams and trigrams (such as artificial intelligence)
+    bigrams_trigrams = list(map(' '.join, nltk.everygrams(filtered_tokens, 2, 3)))
+ 
+    # we create a set to keep the results in.
+    found_skills = set()
+ 
+    # we search for each token in our skills database
+    for token in filtered_tokens:
+        if token.lower() in SKILLS_DB:
+            found_skills.add(token)
+ 
+    # we search for each bigram and trigram in our skills database
+    for ngram in bigrams_trigrams:
+        if ngram.lower() in SKILLS_DB:
+            found_skills.add(ngram)
+ 
+    return found_skills
+
+def extract_text_from_pdf(file):
+    return extract_text(file)
+
+def parse_resume(resume):
+    data = {}
+    names = extract_name_from_text(resume)
+    if names:
+        data["names"] = names
+    education = extract_education(resume)
+    if education:
+        data["education"] = list(education)
+    skills = extract_skills(resume)
+    if skills:
+        data["skills"] = list(skills)
+    return data
+
+if __name__=='__main__':
+    text = extract_text_from_pdf(os.getcwd()+'/resume.pdf')
+    names = extract_name_from_text(text)
+    education = extract_education(text)
+    skills = extract_skills(text)
+
+    if names:
+        print(names)
+    if education:
+        print(education)
+    if skills:
+        print(skills)
