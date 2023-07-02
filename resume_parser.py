@@ -1,6 +1,14 @@
 import os
 import nltk
 from pdfminer.high_level import extract_text
+import spacy
+
+
+try:
+    nlp = spacy.load("en_core_web_md")
+except: # If not present, we download
+    spacy.cli.download("en_core_web_md")
+    nlp = spacy.load("en_core_web_md")
 
 nltk.download('punkt')
 nltk.download('stopwords')
