@@ -37,8 +37,6 @@ def file_to_resume():
             data_parsed = parse_resume(data)
             return jsonify(data_parsed), 200
 
-"""
 #if you run the current python file
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
-"""
