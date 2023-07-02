@@ -43,7 +43,7 @@ pathy==0.10.2
 pdfminer.six==20221105
 pip==23.1.2
 psutil==5.9.0
-python-dotenv==1.0.0
+python-dotenv @ https://files.pythonhosted.org/packages/44/2f/62ea1c8b593f4e093cc1a7768f0d46112107e790c3e478532329e434f00b/python_dotenv-1.0.0-py3-none-any.whl
 pytz==2023.3
 regex==2023.6.3
 requests==2.31.0
