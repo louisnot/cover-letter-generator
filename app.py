@@ -10,6 +10,7 @@ app = Flask(__name__)
 CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = 2048 * 2048
 app.config['UPLOAD_EXTENSIONS'] = ['.pdf']
+app.config['UPLOAD_FOLDER'] = './tmp'
 
 
 @app.route("/")
@@ -27,15 +28,17 @@ def create_letter():
 @app.route("/parse-resume", methods=["POST"])
 def file_to_resume():
     file = request.files['file']
-    print(file.filename)
     if file.filename != '':
         file_ext = os.path.splitext(file.filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
             return "Wrong file format", 400
         else:
-            #file.filename = os.path.join('resume/provided', 'resume')
-            data = extract_text(file.filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.mkdir(app.config['UPLOAD_FOLDER'])
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+            data = extract_text(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             data_parsed = parse_resume(data)
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
             return jsonify(data_parsed), 200
 
 #if you run the current python file
