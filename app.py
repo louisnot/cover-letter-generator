@@ -27,6 +27,7 @@ def create_letter():
 @app.route("/parse-resume", methods=["POST"])
 def file_to_resume():
     file = request.files['file']
+    print(file.filename)
     if file.filename != '':
         file_ext = os.path.splitext(file.filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
